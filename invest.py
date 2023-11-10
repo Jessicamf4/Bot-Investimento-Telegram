@@ -1,8 +1,6 @@
 import logging
 from typing import Dict
-from matplotlib import pyplot as plt
-import numpy as np
-
+import Notificacao;
 from telegram import Bot, ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
 from telegram.ext import (
     Updater,
@@ -20,12 +18,16 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+token_do_bot = '5901744012:AAH2spL-kMTEA2tjVn0bA7GrzJxEETkCst4'
+chat_id_destino = '5345392700'
+texto_mensagem = 'Notificação enviada através do Id do Chat!'
+
 CHOOSING, TYPING_REPLY, TYPING_REPLY2, TYPING_CHOICE = range(4)
 
 reply_keyboard = [
     ['Seis Meses', 'Um ano'],
     ['Quatro anos', 'Aposentadoria'],
-    ['Mais informações...','Feito!'],
+    ['Mais informações...','Finalizar'],
 ]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
@@ -37,12 +39,17 @@ def facts_to_str(user_data: Dict[str, str]) -> str:
 
 
 def start(update: Update, context: CallbackContext) -> int:
-    """Start the conversation and ask user for input."""
+    userid = context.chat_data
+    userid2 = context._user_id_and_data
+    userid3 = context._chat_id_and_data
+    userid4 = context.chat_data
+    userid5= context.user_data
     update.message.reply_text(
         "Olá! Vamos fazer uma estimativa de rendimento? \n"
-        "\n Para isso, selecione o tempo médio que você deseja deixar seu dinheiro investido.",
+        f"\n Para isso, selecione o tempo médio que você deseja deixar seu dinheiro investido. Id do chat obtido: {userid2}",
         reply_markup=markup,
     )
+    resposta_envio = Notificacao.enviar_mensagem(token_do_bot, userid2, texto_mensagem)
 
     return CHOOSING
 
@@ -70,15 +77,7 @@ def aposentadoria_receive(update: Update, context: CallbackContext) -> int:
     f"{(user_data)} você deseja investir {text} e deixá-lo guardado durante 30 anos!  \n"
     f"\n Então, o valor total do investimento será de: {rendimentoTotal:.2f}",
     reply_markup=markup,)
-    anos=[1, 30]
-    renda=[int(text), int(rendimentoTotal)]
-    plt.xlabel("Anos")
-    plt.ylabel("Rendimento")
-    plt.title("Valor inicial X Rendimento final")
-    plt.plot(anos, renda, linestyle='dotted', marker='o', color='blue', markersize=4)
-    plt.savefig(f"img/{rendimentoTotal}.png")
-    update.message.reply_photo(photo=open(f'img/{rendimentoTotal}.png', 'rb'))
-
+    
 
 def received_information(update: Update, context: CallbackContext) -> int:
     user_data = context.user_data
@@ -101,12 +100,6 @@ def received_information(update: Update, context: CallbackContext) -> int:
             print(valorTotal)
         valorInvestido = float(text) * 6
         calculoTotal = (valorInvestido + (valorTotal - valorInvestido)*0.775)
-        ordem=[1,2,3,4,5,6]
-        plt.xlabel("Número de meses")
-        plt.ylabel("Investimento")
-        plt.plot(ordem, meses, label='Rendimento', linestyle='--', marker='o', color='blue', markersize=4)
-        plt.title('Investimeto durante 6 meses')
-        plt.savefig(f"img/{calculoTotal}.png")
         update.message.reply_text("Legal! Então, essas são as informações que temos:"
         f"{facts_to_str(user_data)} você deseja investir {text} todo mês durante o período de {category}! Ótimo! \n"
         f"\n Então, o valor total do investimento será de: {calculoTotal:.2f}",
@@ -114,18 +107,7 @@ def received_information(update: Update, context: CallbackContext) -> int:
         )
         update.message.reply_photo(photo=open(f'img/{calculoTotal}.png', 'rb'))
         update.message.reply_text("Vamos ver um gráfico comparando o valor investido e o seu rendimento!")
-        valor=[valorInvestido, valorTotal]
-        compare=[1,2]
-        def compara():
-            plt.xlabel("Valor investido X Valor com rendimento")
-            plt.ylabel("Rendimento")
-            plt.bar(compare, valor)
-            plt.savefig(f"img/{calculoTotal:.2f}.png")
-            update.message.reply_photo(photo=open(f'img/{calculoTotal:.2f}.png', 'rb'))
-        compara()
-        
-
-
+    
     elif category == "Um ano":
         a = 0
         valorMensal = float(text)
@@ -139,19 +121,12 @@ def received_information(update: Update, context: CallbackContext) -> int:
 
         valorInvestido = float(text) * 12
         calculoTotal = valorInvestido + (valorTotal)*0.8
-        ordem=[1,2,3,4,5,6, 7, 8,9,10,11,12]
-        plt.xlabel("Número de meses")
-        plt.ylabel("Rendimento")
-        plt.plot(ordem,meses)
-        plt.savefig(f"img/{calculoTotal}.png")
         update.message.reply_text("Legal! Então, essas são as informações que temos:"
         f"{facts_to_str(user_data)} você deseja investir {text} todo mês durante o período de {category}! Ótimo! \n"
         f"\n Então, o valor total do investimento será de: {calculoTotal:.2f}",
         reply_markup=markup,
         )
-        update.message.reply_photo(photo=open(f'img/{calculoTotal}.png', 'rb'))
-        
-
+    
     elif category == "Quatro anos":
         a = 0
         valorMensal = float(text)
@@ -165,20 +140,13 @@ def received_information(update: Update, context: CallbackContext) -> int:
         valorInvestido = float(text)*48
         calculoTotal = (valorInvestido + (valorTotal)*0.85)
         
-        ordem=[1,2,3,4,5,6, 7, 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48]
-        plt.xlabel("Número de meses")
-        plt.ylabel("Rendimento")
-        plt.plot(ordem,meses)
-        plt.savefig(f"img/{calculoTotal}.png")
         update.message.reply_text("Legal! Então, essas são as informações que temos:"
         f"{facts_to_str(user_data)} você deseja investir {text} todo mês durante o período de {category}! Ótimo! \n"
         f"\n Então, o valor total do investimento será de: {calculoTotal:.2f}",
         reply_markup=markup,
         )
-        update.message.reply_photo(photo=open(f'img/{calculoTotal}.png', 'rb'))
-        
-
-    return TYPING_CHOICE
+            
+    return CHOOSING
     
 
 
@@ -199,12 +167,14 @@ def done(update: Update, context: CallbackContext) -> int:
 def main() -> None:
     """Run the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("")
+    updater = Updater("5901744012:AAH2spL-kMTEA2tjVn0bA7GrzJxEETkCst4")
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
-    # Add conversation handler with the states CHOOSING, TYPING_CHOICE and TYPING_REPLY
+    resposta_envio = Notificacao.enviar_mensagem(token_do_bot, chat_id_destino, texto_mensagem)
+    print(resposta_envio)
+
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
@@ -213,6 +183,7 @@ def main() -> None:
                     Filters.regex('^(Seis Meses|Um ano|Quatro anos)$'), regular_choice
                 ),
                 MessageHandler(Filters.regex('^(Mais informações...|Aposentadoria)$'), custom_choice),
+				MessageHandler(Filters.regex('^(Finalizar)$'), done),
             ],
             TYPING_CHOICE: [
                 MessageHandler(
@@ -232,7 +203,7 @@ def main() -> None:
                 )
             ],
         },
-        fallbacks=[MessageHandler(Filters.regex('^Done$'), done)],
+        fallbacks=[MessageHandler(Filters.regex('^Finalizar$'), done)],
     )
 
     dispatcher.add_handler(conv_handler)

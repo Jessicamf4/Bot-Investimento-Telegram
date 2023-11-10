@@ -1,0 +1,6 @@
+logging
+Notificacao
+telegram
+telegram.ext
+python-telegram-bot
+typing
